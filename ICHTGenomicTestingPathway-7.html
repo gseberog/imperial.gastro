@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICHT Gastroenterology Genomic Testing Pathway</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5; --blue-800: #0C447C; --blue-900: #042C53;
+    --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-600: #0F6E56; --teal-800: #085041;
+    --green-50: #EAF3DE; --green-600: #3B6D11; --green-800: #27500A;
+    --amber-50: #FAEEDA; --amber-600: #854F0B; --amber-800: #633806;
+    --red-50: #FCEBEB; --red-600: #A32D2D;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-600: #5F5E5A;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fa; color: #1a2332; min-height: 100vh; }
+  header { background: var(--blue-900); color: white; padding: 2rem 2rem 1.5rem; border-bottom: 3px solid var(--blue-600); }
+  header .logo-row { display: flex; align-items: center; gap: 14px; margin-bottom: 1rem; }
+  header .logo-mark { width: 44px; height: 44px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  header h1 { font-size: 1.35rem; font-weight: 600; color: white; line-height: 1.3; }
+  header p.subtitle { font-size: 0.85rem; color: #B5D4F4; margin-top: 0.25rem; }
+  header .tagline { font-size: 0.8rem; color: #B5D4F4; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 0.75rem; margin-top: 0.75rem; line-height: 1.6; }
+  header .tagline p { margin-bottom: 0.5rem; }
+  header .tagline p:last-child { margin-bottom: 0; }
+  header .tagline a { color: #B5D4F4; }
+  .container { max-width: 820px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  .card { background: white; border: 1px solid #dde3ec; border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem; }
+  .card-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-600); margin-bottom: 0.6rem; }
+  .card h2 { font-size: 1.05rem; font-weight: 600; color: var(--blue-900); margin-bottom: 1rem; line-height: 1.4; }
+  .section-header { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--blue-600); background: var(--blue-50); border: 1px solid var(--blue-100); border-radius: var(--radius-sm); padding: 0.5rem 0.85rem; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .option { display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.7rem 0.9rem; border: 1px solid #dde3ec; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; color: #1a2332; line-height: 1.45; user-select: none; }
+  .option:hover { background: var(--blue-50); border-color: #B5D4F4; }
+  .option.selected { background: var(--blue-50); border-color: var(--blue-600); }
+  .option input { margin-top: 2px; flex-shrink: 0; accent-color: var(--blue-600); }
+  .option .opt-label { flex: 1; }
+  .info-box { border-radius: var(--radius-sm); padding: 1rem 1.1rem; margin-bottom: 0.75rem; font-size: 0.88rem; line-height: 1.6; }
+  .info-box.blue { background: var(--blue-50); border-left: 3px solid var(--blue-600); color: var(--blue-800); }
+  .info-box.green { background: var(--green-50); border-left: 3px solid var(--green-600); color: var(--green-800); }
+  .info-box.amber { background: var(--amber-50); border-left: 3px solid var(--amber-600); color: var(--amber-800); }
+  .info-box.teal { background: var(--teal-50); border-left: 3px solid var(--teal-600); color: var(--teal-800); }
+  .info-box strong { font-weight: 600; display: block; margin-bottom: 0.25rem; }
+  .field-note { font-size: 0.8rem; color: var(--gray-600); margin-top: 0.5rem; font-style: italic; }
+  .result-card { border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+  .result-card.final { background: var(--teal-50); border: 1px solid var(--teal-100); }
+  .result-card h3 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--teal-600); margin-bottom: 0.75rem; }
+  .result-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: flex-start; }
+  .result-label { font-size: 0.8rem; font-weight: 600; color: var(--gray-600); min-width: 160px; flex-shrink: 0; }
+  .result-value { font-size: 0.88rem; color: #1a2332; line-height: 1.5; }
+  .badge { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 20px; margin-right: 4px; margin-bottom: 2px; }
+  .badge.urgent { background: #FCEBEB; color: var(--red-600); }
+  .badge.routine { background: var(--green-50); color: var(--green-600); }
+  .badge.diagnostic { background: var(--blue-50); color: var(--blue-600); }
+  .badge.predictive { background: var(--amber-50); color: var(--amber-600); }
+  .sample-box { background: #f8f9fb; border: 1px solid #dde3ec; border-radius: var(--radius-sm); padding: 1rem 1.1rem; font-size: 0.85rem; line-height: 1.7; color: #2d3a4a; margin-top: 1rem; }
+  .sample-box strong { display: block; color: var(--blue-800); margin-bottom: 0.25rem; font-weight: 600; }
+  .reset-btn { display: inline-block; margin-top: 1.5rem; padding: 0.65rem 1.5rem; background: var(--blue-900); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 500; cursor: pointer; }
+  .reset-btn:hover { background: var(--blue-600); }
+  .continue-btn { margin-top: 1rem; display: inline-block; padding: 0.55rem 1.3rem; background: var(--blue-600); color: white; border: none; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; cursor: pointer; }
+  .continue-btn:hover { background: var(--blue-800); }
+  .hidden { display: none; }
+  a { color: var(--blue-600); text-decoration: underline; }
+  ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
+  ul li { font-size: 0.88rem; line-height: 1.6; color: #2d3a4a; margin-bottom: 0.2rem; }
+  .divider { border: none; border-top: 1px solid #eaecf0; margin: 1rem 0; }
+  footer { background: var(--gray-50); border-top: 1px solid var(--gray-100); padding: 1.5rem 2rem; font-size: 0.78rem; color: var(--gray-600); line-height: 1.6; }
+  footer a { color: var(--blue-600); }
+  @media (max-width: 600px) { .result-row { flex-direction: column; gap: 0.1rem; } .result-label { min-width: unset; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-row">
+    <div class="logo-mark">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="13" cy="13" r="10" stroke="#185FA5" stroke-width="2"/>
+        <path d="M9 13h8M13 9v8" stroke="#185FA5" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="13" cy="7" r="1.5" fill="#185FA5"/>
+        <circle cx="13" cy="19" r="1.5" fill="#185FA5"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Gastroenterology Genomic Testing Pathway</h1>
+      <p class="subtitle">Imperial College Healthcare NHS Trust</p>
+    </div>
+  </div>
+  <div class="tagline">
+    <p>Please use the below form to determine if your patient is eligible for a genomic test.</p>
+    <p>Use the <a href="https://www.england.nhs.uk/publication/national-genomic-test-directories/" target="_blank">National Genomic Testing Directory</a> and <a href="https://norththamesgenomics.nhs.uk/for-healthcare-professionals/genetic-test-ordering/test-order-forms/" target="_blank">North Thames Genomic Medicine Centre</a> to find the latest eligibility criteria and forms.</p>
+    <p>Use the <a href="https://norththamesgenomics.nhs.uk/wp-content/uploads/2026/03/UPDATED-Clinical-Utility-version_Genetic-Test-Request-Form-RGF-SAB0001-v8_EDIT.pdf" target="_blank">North Thames Test Request Form</a> for phlebotomy order and <a href="https://norththamesgenomics.nhs.uk/wp-content/uploads/2023/08/NTGLH_Record-of-Discussion_v1.pdf" target="_blank">Record of Discussion Form</a> to summarise clinical consent.</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div id="step-screener" class="card">
+    <div class="card-title">Step 1 of 2 &mdash; Initial screening</div>
+    <h2>What is the reason for genomic testing?</h2>
+    <p style="font-size:0.82rem;color:var(--gray-600);margin-bottom:1rem;">Select all that apply.</p>
+    <div class="options">
+      <label class="option"><input type="checkbox" name="screener" value="1"><span class="opt-label">Cancer</span></label>
+      <label class="option"><input type="checkbox" name="screener" value="2"><span class="opt-label">Polyps</span></label>
+      <label class="option"><input type="checkbox" name="screener" value="3"><span class="opt-label">Family history</span></label>
+      <label class="option"><input type="checkbox" name="screener" value="4"><span class="opt-label">Pancreatitis</span></label>
+      <label class="option"><input type="checkbox" name="screener" value="5"><span class="opt-label">Liver or biliary disease</span></label>
+    </div>
+    <button class="continue-btn" id="btn-screener">Continue &#8594;</button>
+  </div>
+
+  <div id="step-cancer" class="hidden">
+    <div class="card">
+      <div class="info-box blue">
+        The majority of cancers will be managed via specific MDTs. Mismatch repair deficiency (dMMR) testing is usually routinely arranged as part of oncological decision-making.<br><br>
+        For <strong style="display:inline">colorectal cancer</strong>, please email imperial.colorectalcns&#64;nhs.net if further local advice is required.<br><br>
+        For historic cancers or cancers managed elsewhere where dMMR testing status is unclear, use the pathway below.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Cancer &mdash; Step 2</div>
+      <h2>What kind of cancer does this patient have?</h2>
+      <p style="font-size:0.82rem;color:var(--gray-600);margin-bottom:1rem;">Select all that apply.</p>
+      <div class="options">
+        <label class="option"><input type="checkbox" name="cancer_screen" value="1"><span class="opt-label">Oesophageal</span></label>
+        <label class="option"><input type="checkbox" name="cancer_screen" value="2"><span class="opt-label">Gastric</span></label>
+        <label class="option"><input type="checkbox" name="cancer_screen" value="3"><span class="opt-label">Small bowel</span></label>
+        <label class="option"><input type="checkbox" name="cancer_screen" value="4"><span class="opt-label">Colorectal</span></label>
+        <label class="option"><input type="checkbox" name="cancer_screen" value="5"><span class="opt-label">Pancreas</span></label>
+        <label class="option"><input type="checkbox" name="cancer_screen" value="6"><span class="opt-label">Cholangiocarcinoma</span></label>
+        <label class="option"><input type="checkbox" name="cancer_screen" value="7"><span class="opt-label">Gastrointestinal stromal tumour (GIST)</span></label>
+        <label class="option"><input type="checkbox" name="cancer_screen" value="8"><span class="opt-label">Cancer of any type diagnosed at age &lt; 25 years</span></label>
+      </div>
+      <button class="continue-btn" id="btn-cancer-screen">Continue &#8594;</button>
+    </div>
+  </div>
+
+  <div id="step-gastric" class="hidden card">
+    <div class="card-title">Gastric cancer &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <p style="font-size:0.8rem;color:var(--gray-600);margin-bottom:0.75rem;">FDR: First-degree relative; SDR: Second-degree relative</p>
+    <div class="options">
+      <label class="option"><input type="radio" name="cancer_gastric" value="1"><span class="opt-label">Diffuse gastric cancer (&lt; 50 years)</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="2"><span class="opt-label">Gastric in situ signet ring cells or pagetoid spread of signet ring cells under 50 years</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="3"><span class="opt-label">Diffuse gastric cancer at any age with a personal history or FDR with cleft lip or cleft palate</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="4"><span class="opt-label">Double primary diffuse gastric cancer and lobular breast cancer (both &lt; 70 years)</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="5"><span class="opt-label">Diffuse gastric cancer and &ge;1 FDR/SDR with diffuse gastric cancer at any age</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="6"><span class="opt-label">Diffuse gastric cancer at any age and &ge;1 FDR/SDR with lobular breast cancer &lt; 70 years</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="7"><span class="opt-label">Lobular breast cancer and &ge;1 FDR/SDR has diffuse gastric cancer (&ge;1 case occurred &lt; 70 years)</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="8"><span class="opt-label">2 cases of lobular breast cancer &lt; 50 years (e.g. bilateral or multiple ipsilateral tumours)</span></label>
+      <label class="option"><input type="radio" name="cancer_gastric" value="9"><span class="opt-label">Suspected Lynch syndrome</span></label>
+    </div>
+    <button class="continue-btn" id="btn-gastric">Continue &#8594;</button>
+  </div>
+
+  <div id="step-colorectal" class="hidden card">
+    <div class="card-title">Colorectal cancer &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="cancer_colorectal" value="1"><span class="opt-label">Any colorectal cancer diagnosis under 40 years</span></label>
+      <label class="option"><input type="radio" name="cancer_colorectal" value="2"><span class="opt-label">&ge;5 adenomatous polyps and colorectal cancer</span></label>
+      <label class="option"><input type="radio" name="cancer_colorectal" value="3"><span class="opt-label">Suspected Lynch syndrome</span></label>
+    </div>
+    <button class="continue-btn" id="btn-colorectal">Continue &#8594;</button>
+  </div>
+
+  <div id="step-pancreas-cancer" class="hidden card">
+    <div class="card-title">Pancreatic cancer &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="cancer_pancreas" value="1"><span class="opt-label">Pancreatic cancer age &lt; 60</span></label>
+      <label class="option"><input type="radio" name="cancer_pancreas" value="2"><span class="opt-label">Pancreatic cancer age &lt; 70 AND breast cancer age &lt; 60, melanoma age &lt; 60, OR ovarian cancer</span></label>
+    </div>
+    <button class="continue-btn" id="btn-pancreas-cancer">Continue &#8594;</button>
+  </div>
+
+  <div id="step-gist" class="hidden card">
+    <div class="card-title">GIST &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="cancer_gist" value="1"><span class="opt-label">Diagnosed age &lt; 50</span></label>
+      <label class="option"><input type="radio" name="cancer_gist" value="2"><span class="opt-label">&ge;1 relative (first / second / third degree) with GIST, phaeochromocytoma, or paraganglioma</span></label>
+    </div>
+    <button class="continue-btn" id="btn-gist">Continue &#8594;</button>
+  </div>
+
+  <div id="step-oesoph" class="hidden card">
+    <div class="card-title">Oesophageal / small bowel / cholangiocarcinoma</div>
+    <div class="info-box blue">
+      There are no dedicated genomic panels for these cancer types.<br><br>
+      However, if there is deficient mismatch repair (dMMR) on tissue immunohistochemistry OR the affected individual comes from a Lynch syndrome family (modified Amsterdam criteria positive), select below:
+    </div>
+    <div class="options">
+      <label class="option"><input type="radio" name="cancer_oesophageal" value="1"><span class="opt-label">Suspected Lynch syndrome</span></label>
+    </div>
+    <button class="continue-btn" id="btn-oesoph">Continue &#8594;</button>
+  </div>
+
+  <div id="step-young-cancer" class="hidden card">
+    <div class="info-box amber">
+      <strong>Very early onset solid organ cancer &mdash; WGS pathway</strong>
+      Very early onset solid organ cancer will need a separate Whole Genome Sequencing (WGS) pathway. This is usually managed by the dedicated genomic medicine team.<br><br>
+      Please email imperial.wl.gmc&#64;nhs.net to discuss a referral.
+    </div>
+    <button class="continue-btn" id="btn-young">Continue &#8594;</button>
+  </div>
+
+  <div id="step-polyp" class="hidden card">
+    <div class="card-title">Polyps &mdash; Step 2</div>
+    <h2>What kind of polyps does this patient have?</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="polyp_screen" value="1"><span class="opt-label">Adenomas</span></label>
+      <label class="option"><input type="radio" name="polyp_screen" value="2"><span class="opt-label">Sessile serrated lesions</span></label>
+      <label class="option"><input type="radio" name="polyp_screen" value="3"><span class="opt-label">Hamartomas</span></label>
+      <label class="option"><input type="radio" name="polyp_screen" value="4"><span class="opt-label">Known polyposis syndrome (FAP, MUTYH-associated polyposis, Peutz-Jeghers syndrome, Juvenile polyposis syndrome)</span></label>
+    </div>
+    <button class="continue-btn" id="btn-polyp">Continue &#8594;</button>
+  </div>
+
+  <div id="step-adenoma" class="hidden card">
+    <div class="card-title">Adenomas &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="adenoma_screen" value="1"><span class="opt-label">&ge;5 adenomatous polyps (age &lt; 40 years)</span></label>
+      <label class="option"><input type="radio" name="adenoma_screen" value="2"><span class="opt-label">&ge;10 adenomatous polyps (age &lt; 60 years)</span></label>
+      <label class="option"><input type="radio" name="adenoma_screen" value="3"><span class="opt-label">&ge;20 adenomatous polyps (age &ge; 60 years)</span></label>
+      <label class="option"><input type="radio" name="adenoma_screen" value="4"><span class="opt-label">&ge;5 adenomatous polyps (age &lt; 60 years) AND first degree relative with &ge;5 adenomatous polyps (age &lt; 60 years)</span></label>
+    </div>
+    <button class="continue-btn" id="btn-adenoma">Continue &#8594;</button>
+  </div>
+
+  <div id="step-ssl" class="hidden card">
+    <div class="card-title">Sessile serrated lesions &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="ssl_screen" value="1"><span class="opt-label">&ge;5 serrated lesions/polyps proximal to the rectum, all at least 5 mm in size with two or more at least 10 mm in size</span></label>
+      <label class="option"><input type="radio" name="ssl_screen" value="2"><span class="opt-label">&ge;20 serrated lesions/polyps of any size distributed through the large bowel with at least five proximal to the rectum</span></label>
+    </div>
+    <button class="continue-btn" id="btn-ssl">Continue &#8594;</button>
+  </div>
+
+  <div id="step-hamartoma" class="hidden card">
+    <div class="card-title">Hamartomas &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="hamartoma_screen" value="1"><span class="opt-label">&ge;5 hamartomatous polyps of the colorectum</span></label>
+      <label class="option"><input type="radio" name="hamartoma_screen" value="2"><span class="opt-label">&ge;2 hamartomatous polyps throughout the GI tract</span></label>
+      <label class="option"><input type="radio" name="hamartoma_screen" value="3"><span class="opt-label">&ge;1 hamartomatous polyp and a first / second degree relative has hamartomatous polyp</span></label>
+    </div>
+    <button class="continue-btn" id="btn-hamartoma">Continue &#8594;</button>
+  </div>
+
+  <div id="step-polyposis" class="hidden card">
+    <div class="info-box blue">
+      <strong>Known polyposis syndrome</strong>
+      Patient should be managed in a dedicated polyposis clinic. Information about polyp syndromes can be found on the dedicated St Mark's polyposis app.
+    </div>
+    <button class="continue-btn" id="btn-polyposis">Continue &#8594;</button>
+  </div>
+
+  <div id="step-fhx" class="hidden card">
+    <div class="card-title">Family history &mdash; Step 2</div>
+    <h2>What is the suspected inherited cancer risk?</h2>
+    <p style="font-size:0.82rem;color:var(--gray-600);margin-bottom:1rem;">Select all that apply.</p>
+    <div class="options">
+      <label class="option"><input type="checkbox" name="risk_screen" value="1"><span class="opt-label">Oesophageal</span></label>
+      <label class="option"><input type="checkbox" name="risk_screen" value="2"><span class="opt-label">Gastric</span></label>
+      <label class="option"><input type="checkbox" name="risk_screen" value="3"><span class="opt-label">Pancreatic</span></label>
+      <label class="option"><input type="checkbox" name="risk_screen" value="4"><span class="opt-label">Cholangiocarcinoma</span></label>
+      <label class="option"><input type="checkbox" name="risk_screen" value="5"><span class="opt-label">Colorectal</span></label>
+    </div>
+    <button class="continue-btn" id="btn-fhx">Continue &#8594;</button>
+  </div>
+
+  <div id="step-risk-pancreas" class="hidden card">
+    <div class="card-title">Family history of pancreatic cancer &mdash; criteria</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <p class="field-note" style="margin-bottom:0.85rem;">Clinical Trial: <a href="https://www.europactrial.com" target="_blank">europactrial.com</a></p>
+    <div class="options">
+      <label class="option"><input type="radio" name="risk_pancreas" value="1"><span class="opt-label">One first / second degree relative with pancreatic cancer age &lt; 60</span></label>
+      <label class="option"><input type="radio" name="risk_pancreas" value="2"><span class="opt-label">Two first / second degree relatives with any of: breast cancer age &lt; 60, melanoma age &lt; 60, OR ovarian cancer</span></label>
+    </div>
+    <button class="continue-btn" id="btn-risk-pancreas">Continue &#8594;</button>
+  </div>
+
+  <div id="step-risk-colorectal" class="hidden card">
+    <div class="info-box blue">
+      <strong>Family history of colorectal cancer</strong>
+      Categorise risk using the BSG/ACPGBI/UKCGG pathway. Moderate and high risk categories should be referred to the specialist clinic.<br><br>
+      <em style="font-size:0.78rem;">Reference: Monahan KJ et al. Guidelines for the management of hereditary colorectal cancer. Gut 2020;69:411&ndash;444.</em>
+    </div>
+    <button class="continue-btn" id="btn-risk-colorectal">Continue &#8594;</button>
+  </div>
+
+  <div id="step-pancreatitis" class="hidden card">
+    <div class="card-title">Pancreatitis &mdash; Step 2</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <p style="font-size:0.85rem;color:#4a5568;margin-bottom:1rem;">N.B. In patients where there are no identifiable acquired causes (e.g. gallstones or history of excessive alcohol intake)</p>
+    <p class="field-note" style="margin-bottom:0.85rem;">Clinical Trial: <a href="https://www.europactrial.com" target="_blank">europactrial.com</a></p>
+    <div class="options">
+      <label class="option"><input type="radio" name="pancreatitis" value="1"><span class="opt-label">Clinical diagnosis of recurrent acute pancreatitis (at least 2 attacks)</span></label>
+      <label class="option"><input type="radio" name="pancreatitis" value="2"><span class="opt-label">Chronic pancreatitis</span></label>
+      <label class="option"><input type="radio" name="pancreatitis" value="3"><span class="opt-label">First episode of acute pancreatitis occurring below the age of 18</span></label>
+      <label class="option"><input type="radio" name="pancreatitis" value="4"><span class="opt-label">First episode of acute pancreatitis with a first degree relative who has had pancreatitis</span></label>
+    </div>
+    <button class="continue-btn" id="btn-pancreatitis">Continue &#8594;</button>
+  </div>
+
+  <div id="step-liver" class="hidden card">
+    <div class="card-title">Liver or biliary disease &mdash; Step 2</div>
+    <h2>Select which criteria applies to your patient.</h2>
+    <div class="options">
+      <label class="option"><input type="radio" name="liverbiliary_1" value="1"><span class="opt-label">Suspected Gilbert's syndrome</span></label>
+      <label class="option"><input type="radio" name="liverbiliary_1" value="2"><span class="opt-label">Suspected Wilson's disease</span></label>
+    </div>
+    <button class="continue-btn" id="btn-liver">Continue &#8594;</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="step-results" class="hidden">
+    <div class="section-header">Based on your responses &mdash; test request summary</div>
+
+    <div id="result-lynch" class="hidden card">
+      <div class="info-box teal">
+        <strong>Lynch syndrome referral &mdash; St Mark's Hospital Family Cancer Clinic</strong>
+        Any confirmed or suspected Lynch syndrome should be referred to the St Mark's Hospital Family Cancer Clinic (SMCFIC).<br><br>
+        <strong style="display:inline">Referral criteria (Modified Amsterdam Criteria):</strong>
+        <ul style="margin-top:0.4rem;">
+          <li>&ge;3 cases of Lynch-related cancer over &ge;2 generations</li>
+          <li>&ge;1 case diagnosed &lt; 50 years</li>
+        </ul><br>
+        <strong style="display:inline">Lynch-related cancers:</strong> Colorectal, endometrial, epithelial ovarian, endocervical, gastric, oesophageal junctional, small bowel, cholangiocarcinoma, pancreatic, ureteric, transitional cell of renal pelvis, prostate, glioblastoma, multiple sebaceous tumours.<br><br>
+        Contact SMCFIC: LNWH-tr.SMCFIC&#64;nhs.net
+      </div>
+    </div>
+
+    <div id="result-main" class="hidden result-card final">
+      <h3>North Thames Genetic Test Request Form &mdash; details to enter</h3>
+      <div class="result-row"><span class="result-label">Submitter ID (Outreach)</span><span class="result-value">1230015757</span></div>
+      <div class="result-row"><span class="result-label">Referring consultant email</span><span class="result-value">imperial.gastrogenomics&#64;nhs.net</span></div>
+      <div class="result-row"><span class="result-label">Sample type</span><span class="result-value">Blood</span></div>
+      <hr class="divider">
+      <div class="result-row"><span class="result-label">Clinical indication code(s)</span><span class="result-value" id="result-codes">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Reason for referral</span><span class="result-value" id="result-reasons">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Priority</span><span class="result-value" id="result-priority">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Molecular genetic testing</span><span class="result-value" id="result-testtype">&mdash;</span></div>
+      <div id="result-fhx-note" class="hidden" style="margin-top:0.75rem;"><div class="info-box amber"><strong>Family history required</strong>Please include relevant family history on the test request form.</div></div>
+      <div id="result-detail-note" class="hidden" style="margin-top:0.75rem;"><div class="info-box amber"><strong>Add specific indication</strong>Please add the specific indication to the reason for referral on the form.</div></div>
+    </div>
+
+    <div id="result-sample" class="hidden card">
+      <div class="card-title">Sample &amp; submission requirements</div>
+      <p style="font-size:0.82rem;color:var(--gray-600);margin-bottom:0.75rem;">Print and complete test request and record of discussion forms to give to patient.</p>
+      <div class="sample-box"><strong>Sample requirements</strong>4 mls EDTA (pink or lavender) AND<br>2 mls Lithium Heparin (orange or green)</div>
+      <div class="sample-box" style="margin-top:0.75rem;"><strong>Address for samples / request forms</strong>North Thames GLH<br>Rare &amp; Inherited Disease Genomic Laboratory Specimen Reception<br>Level 5 Barclay House, 37 Queen Square, London WC1N 3BH</div>
+      <div class="sample-box" style="margin-top:0.75rem;"><strong>Contact for test queries</strong>gos-tr.norththamesgenomics&#64;nhs.net</div>
+    </div>
+
+    <div id="result-end" class="hidden card">
+      <div class="info-box green">
+        <strong>Audit &amp; governance</strong>
+        Please forward genomic results to imperial.gastrogenomics&#64;nhs.net for local audit and governance.
+      </div>
+    </div>
+
+    <button class="reset-btn" id="btn-reset">&#8634; Start again</button>
+  </div>
+
+</div>
+
+<footer>
+  This pathway has been designed to support clinical decision-making and is based on North Thames GMC library criteria (v1.0_200125).
+  Please check the <a href="https://www.england.nhs.uk/publication/national-genomic-test-directories/" target="_blank">NHS England Genomic Test Directory</a> for the latest updates.<br>
+  Send feedback to imperial.gastrogenomics&#64;nhs.net
+</footer>
+
+<script>
+(function () {
+  var s = {
+    screener: [], cancer_screen: [], cancer_gastric: null, cancer_colorectal: null,
+    cancer_pancreas: null, cancer_gist: null, cancer_oesophageal: null,
+    polyp_screen: null, adenoma_screen: null, ssl_screen: null, hamartoma_screen: null,
+    risk_screen: [], risk_pancreas: null, pancreatitis: null, liverbiliary_1: null,
+    _pendingCancerSubs: [], _pendingBranches: [], _pendingRiskSubs: []
+  };
+
+  function checked(name) {
+    return Array.from(document.querySelectorAll('input[name="' + name + '"]:checked')).map(function (e) { return e.value; });
+  }
+  function radio(name) {
+    var el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : null;
+  }
+  function show(id) { var el = document.getElementById(id); if (el) el.classList.remove('hidden'); }
+  function hide(id) { var el = document.getElementById(id); if (el) el.classList.add('hidden'); }
+  function has(arr, v) { return arr.indexOf(v) > -1; }
+
+  document.addEventListener('change', function (e) {
+    if (e.target.type === 'checkbox' || e.target.type === 'radio') {
+      var grp = document.querySelectorAll('input[name="' + e.target.name + '"]');
+      grp.forEach(function (inp) { inp.closest('.option').classList.toggle('selected', inp.checked); });
+    }
+  });
+
+  function on(id, fn) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', fn);
+  }
+
+  function nextBranch() {
+    if (!s._pendingBranches.length) { showResults(); return; }
+    var b = s._pendingBranches.shift();
+    if (b === 'cancer') show('step-cancer');
+    else if (b === 'polyp') show('step-polyp');
+    else if (b === 'fhx') show('step-fhx');
+    else if (b === 'pancreatitis') show('step-pancreatitis');
+    else if (b === 'liver') show('step-liver');
+  }
+
+  function nextCancerSub() {
+    if (!s._pendingCancerSubs.length) { nextBranch(); return; }
+    var sub = s._pendingCancerSubs.shift();
+    if (sub === 'gastric') show('step-gastric');
+    else if (sub === 'colorectal') show('step-colorectal');
+    else if (sub === 'pancreas-cancer') show('step-pancreas-cancer');
+    else if (sub === 'gist') show('step-gist');
+    else if (sub === 'oesoph') show('step-oesoph');
+    else if (sub === 'young') show('step-young-cancer');
+  }
+
+  function nextRiskSub() {
+    if (!s._pendingRiskSubs.length) { nextBranch(); return; }
+    var sub = s._pendingRiskSubs.shift();
+    if (sub === 'risk-pancreas') show('step-risk-pancreas');
+    else if (sub === 'risk-colorectal') show('step-risk-colorectal');
+  }
+
+  on('btn-screener', function () {
+    s.screener = checked('screener');
+    if (!s.screener.length) { alert('Please select at least one reason.'); return; }
+    hide('step-screener');
+    s._pendingBranches = [];
+    if (has(s.screener, '1')) s._pendingBranches.push('cancer');
+    if (has(s.screener, '2')) s._pendingBranches.push('polyp');
+    if (has(s.screener, '3')) s._pendingBranches.push('fhx');
+    if (has(s.screener, '4')) s._pendingBranches.push('pancreatitis');
+    if (has(s.screener, '5')) s._pendingBranches.push('liver');
+    nextBranch();
+  });
+
+  on('btn-cancer-screen', function () {
+    s.cancer_screen = checked('cancer_screen');
+    if (!s.cancer_screen.length) { alert('Please select at least one option.'); return; }
+    hide('step-cancer');
+    s._pendingCancerSubs = [];
+    if (has(s.cancer_screen, '2')) s._pendingCancerSubs.push('gastric');
+    if (has(s.cancer_screen, '4')) s._pendingCancerSubs.push('colorectal');
+    if (has(s.cancer_screen, '5')) s._pendingCancerSubs.push('pancreas-cancer');
+    if (has(s.cancer_screen, '7')) s._pendingCancerSubs.push('gist');
+    if (has(s.cancer_screen, '1') || has(s.cancer_screen, '3') || has(s.cancer_screen, '6')) s._pendingCancerSubs.push('oesoph');
+    if (has(s.cancer_screen, '8')) s._pendingCancerSubs.push('young');
+    nextCancerSub();
+  });
+
+  on('btn-polyp', function () {
+    s.polyp_screen = radio('polyp_screen');
+    if (!s.polyp_screen) { alert('Please select an option.'); return; }
+    hide('step-polyp');
+    if (s.polyp_screen === '1') show('step-adenoma');
+    else if (s.polyp_screen === '2') show('step-ssl');
+    else if (s.polyp_screen === '3') show('step-hamartoma');
+    else if (s.polyp_screen === '4') show('step-polyposis');
+  });
+
+  on('btn-fhx', function () {
+    s.risk_screen = checked('risk_screen');
+    if (!s.risk_screen.length) { alert('Please select at least one option.'); return; }
+    hide('step-fhx');
+    s._pendingRiskSubs = [];
+    if (has(s.risk_screen, '3')) s._pendingRiskSubs.push('risk-pancreas');
+    if (has(s.risk_screen, '5')) s._pendingRiskSubs.push('risk-colorectal');
+    nextRiskSub();
+  });
+
+  function proceedSub() {
+    var g = radio('cancer_gastric'); if (g) s.cancer_gastric = g;
+    var c = radio('cancer_colorectal'); if (c) s.cancer_colorectal = c;
+    var p = radio('cancer_pancreas'); if (p) s.cancer_pancreas = p;
+    var gi = radio('cancer_gist'); if (gi) s.cancer_gist = gi;
+    var o = radio('cancer_oesophageal'); if (o) s.cancer_oesophageal = o;
+    var a = radio('adenoma_screen'); if (a) s.adenoma_screen = a;
+    var sl = radio('ssl_screen'); if (sl) s.ssl_screen = sl;
+    var h = radio('hamartoma_screen'); if (h) s.hamartoma_screen = h;
+    var rp = radio('risk_pancreas'); if (rp) s.risk_pancreas = rp;
+    var pan = radio('pancreatitis'); if (pan) s.pancreatitis = pan;
+    var liv = radio('liverbiliary_1'); if (liv) s.liverbiliary_1 = liv;
+
+    ['step-gastric','step-colorectal','step-pancreas-cancer','step-gist','step-oesoph','step-young-cancer',
+     'step-adenoma','step-ssl','step-hamartoma','step-polyposis',
+     'step-risk-pancreas','step-risk-colorectal','step-pancreatitis','step-liver'].forEach(hide);
+
+    if (s._pendingCancerSubs.length) { nextCancerSub(); return; }
+    if (s._pendingRiskSubs.length) { nextRiskSub(); return; }
+    nextBranch();
+  }
+
+  ['btn-gastric','btn-colorectal','btn-pancreas-cancer','btn-gist','btn-oesoph','btn-young',
+   'btn-adenoma','btn-ssl','btn-hamartoma','btn-polyposis',
+   'btn-risk-pancreas','btn-risk-colorectal','btn-pancreatitis','btn-liver'].forEach(function (id) { on(id, proceedSub); });
+
+  function showResults() {
+    show('step-results');
+    var codes = [], reasons = [], priority = [], testType = [];
+    var needFhx = false, needDetail = false, showLynch = false;
+
+    var oesophLynch = s.cancer_oesophageal === '1';
+    var crLynch = s.cancer_colorectal === '3';
+    var gastricLynch = s.cancer_gastric === '9';
+
+    if (has(s.risk_screen, '1') || oesophLynch || crLynch || gastricLynch) { codes.push('R210.2'); showLynch = true; }
+    if (has(s.screener, '2') || s.cancer_colorectal === '1' || s.cancer_colorectal === '2') codes.push('R211.1');
+    if (s.polyp_screen === '4') codes.push('R212.2');
+    if (s.cancer_gastric && has(['1','2','3','4','5','6','7','8'], s.cancer_gastric)) codes.push('R215.1');
+    if (has(s.risk_screen, '3') || s.cancer_pancreas === '1' || s.cancer_pancreas === '2') codes.push('R367.1');
+    if (has(s.screener, '4')) codes.push('R175');
+    if (s.cancer_gist === '1' || s.cancer_gist === '2') codes.push('R363.1');
+    if (s.liverbiliary_1 === '1') codes.push('R176.1');
+    if (s.liverbiliary_1 === '2') codes.push('R172.1');
+    if (has(s.cancer_screen, '8')) codes.push('Whole Genome Sequencing');
+
+    if (s.cancer_gist === '1') reasons.push('Diagnosis of GIST &lt; 50 years old');
+    if (s.cancer_gist === '2') { reasons.push('&ge;1 relative with GIST / phaeochromocytoma / paraganglioma'); needFhx = true; }
+    if (has(s.risk_screen, '1') || oesophLynch || gastricLynch) reasons.push('Suspected Lynch syndrome meeting Modified Amsterdam Criteria');
+    if (s.adenoma_screen === '1') reasons.push('&ge;5 adenomatous polyps (age &lt; 40 years)');
+    if (s.adenoma_screen === '2') reasons.push('&ge;10 adenomatous polyps (age &lt; 60 years)');
+    if (s.adenoma_screen === '3') reasons.push('&ge;20 adenomatous polyps (age &ge; 60 years)');
+    if (s.adenoma_screen === '4') { reasons.push('&ge;5 adenomatous polyps (age &lt; 60 years) AND first degree relative with &ge;5 adenomatous polyps'); needFhx = true; }
+    if (s.ssl_screen === '1') reasons.push('&ge;5 serrated lesions/polyps proximal to rectum, all &ge;5 mm, two or more &ge;10 mm');
+    if (s.ssl_screen === '2') reasons.push('&ge;20 serrated lesions/polyps distributed through large bowel with &ge;5 proximal to rectum');
+    if (s.hamartoma_screen === '1') reasons.push('&ge;5 hamartomatous polyps of the colorectum');
+    if (s.hamartoma_screen === '2') reasons.push('&ge;2 hamartomatous polyps throughout the GI tract');
+    if (s.hamartoma_screen === '3') { reasons.push('&ge;1 hamartomatous polyp and a first/second degree relative has hamartomatous polyp'); needFhx = true; }
+    if (s.risk_pancreas === '1') { reasons.push('One first/second degree relative with pancreatic cancer age &lt; 60'); needFhx = true; }
+    if (s.risk_pancreas === '2') { reasons.push('Two first/second degree relatives: breast cancer age &lt; 60, melanoma age &lt; 60, OR ovarian cancer'); needFhx = true; }
+    if (s.pancreatitis === '1') reasons.push('Recurrent acute pancreatitis (at least 2 attacks)');
+    if (s.pancreatitis === '2') reasons.push('Chronic pancreatitis');
+    if (s.pancreatitis === '3') reasons.push('First episode of acute pancreatitis below age 18');
+    if (s.pancreatitis === '4') { reasons.push('First episode of acute pancreatitis with a first degree relative who has had pancreatitis'); needFhx = true; }
+    if (s.liverbiliary_1 === '1') reasons.push('Unconjugated hyperbilirubinaemia in the absence of haemolysis');
+    if (s.liverbiliary_1 === '2') reasons.push('High suspicion of Wilson disease');
+    if (s.cancer_colorectal === '1') reasons.push('Colorectal cancer &le; 40 years');
+    if (s.cancer_colorectal === '2') reasons.push('&ge;5 adenomatous polyps and colorectal cancer');
+    if (s.cancer_pancreas === '1') reasons.push('Pancreatic cancer &lt; 60 years');
+    if (s.cancer_pancreas === '2') reasons.push('Pancreatic cancer &lt; 70 years AND breast/melanoma/ovarian cancer');
+    if (s.cancer_gastric && has(['1','2','3','4','5','6','7','8'], s.cancer_gastric)) { reasons.push('Add specific indication'); needDetail = true; }
+    if (has(['3','5','6','7'], s.cancer_gastric)) needFhx = true;
+    if (has(s.cancer_screen, '8')) reasons.push('Cancer of any type diagnosed at age &lt; 25 years');
+
+    if (has(s.screener, '1')) priority.push('<span class="badge urgent">Urgent</span>');
+    if (['2','3','4','5'].some(function (v) { return has(s.screener, v); })) priority.push('<span class="badge routine">Routine</span>');
+
+    var diag = has(s.screener, '2') || has(s.screener, '4') || has(s.screener, '5') ||
+      s.cancer_gist === '1' || (s.cancer_gastric && has(['1','2','3','4','5','6','7','8'], s.cancer_gastric)) ||
+      s.cancer_colorectal === '1' || s.cancer_colorectal === '2' || s.cancer_pancreas === '1' || s.cancer_pancreas === '2' ||
+      crLynch || gastricLynch || has(s.cancer_screen, '1') || has(s.cancer_screen, '3') || has(s.cancer_screen, '6') || has(s.cancer_screen, '8');
+    var pred = has(s.screener, '3') || s.cancer_gist === '2';
+
+    if (diag) testType.push('<span class="badge diagnostic">Diagnostic test</span>');
+    if (pred) testType.push('<span class="badge predictive">Predictive test</span>');
+
+    if (showLynch) show('result-lynch');
+    if (codes.length || reasons.length) {
+      show('result-main');
+      document.getElementById('result-codes').innerHTML = codes.map(function (c) { return '<div>' + c + '</div>'; }).join('') || '&mdash;';
+      document.getElementById('result-reasons').innerHTML = reasons.map(function (r) { return '<div style="margin-bottom:3px;">' + r + '</div>'; }).join('') || '&mdash;';
+      document.getElementById('result-priority').innerHTML = priority.join(' ') || '&mdash;';
+      document.getElementById('result-testtype').innerHTML = testType.join(' ') || '&mdash;';
+      if (needFhx) show('result-fhx-note');
+      if (needDetail) show('result-detail-note');
+    }
+    if (s.screener.length) { show('result-sample'); show('result-end'); }
+  }
+
+  on('btn-reset', function () {
+    s = { screener:[], cancer_screen:[], cancer_gastric:null, cancer_colorectal:null, cancer_pancreas:null, cancer_gist:null, cancer_oesophageal:null, polyp_screen:null, adenoma_screen:null, ssl_screen:null, hamartoma_screen:null, risk_screen:[], risk_pancreas:null, pancreatitis:null, liverbiliary_1:null, _pendingCancerSubs:[], _pendingBranches:[], _pendingRiskSubs:[] };
+    document.querySelectorAll('input[type="checkbox"],input[type="radio"]').forEach(function (i) { i.checked = false; });
+    document.querySelectorAll('.option').forEach(function (o) { o.classList.remove('selected'); });
+    ['step-cancer','step-gastric','step-colorectal','step-pancreas-cancer','step-gist','step-oesoph','step-young-cancer',
+     'step-polyp','step-adenoma','step-ssl','step-hamartoma','step-polyposis',
+     'step-fhx','step-risk-pancreas','step-risk-colorectal','step-pancreatitis','step-liver','step-results',
+     'result-lynch','result-main','result-sample','result-end','result-fhx-note','result-detail-note'].forEach(hide);
+    show('step-screener');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}());
+</script>
+</body>
+</html>
